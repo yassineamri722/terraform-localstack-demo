@@ -6,11 +6,14 @@ terraform {
     }
   }
 }
+
 provider "aws" {
-  region = "us-east-1"
-  s3_use_path_style = true
+  region                      = var.region
+  access_key                  = "test"
+  secret_key                  = "test"
+  s3_use_path_style          = true
   skip_credentials_validation = true
-  skip_metadata_api_check = true
+  skip_metadata_api_check    = true
   skip_requesting_account_id = true
 
   endpoints {
@@ -18,22 +21,29 @@ provider "aws" {
     ec2 = "http://localhost:4566"
   }
 }
-module "my_s3_bucket" {
+
+# S3 Module
+module "s3_bucket" {
   source = "./modules/s3"
-
-  bucket_name = var.bucket_name
+  
+  bucket_name = "${var.bucket_name}-${terraform.workspace}"
 }
-module "my_vpc" {
-  source = "./modules/vpc"
 
+# VPC Module
+module "vpc" {
+  source = "./modules/vpc"
+  
   vpc_cidr    = var.vpc_cidr
   subnet_cidr = var.subnet_cidr
-  
 }
-module "my_ec2" {
-  source = "./modules/ec2"
 
-  ami           = var.ec2_ami
-  instance_type = var.ec2_instance_type
-  subnet_id     = module.my_vpc.subnet_id
+# EC2 Module
+module "ec2" {
+  source = "./modules/ec2"
+  
+  ami_id        = var.ami_id
+  instance_type = var.instance_type
+  subnet_id     = module.vpc.subnet_id
+  
+  depends_on = [module.vpc]
 }

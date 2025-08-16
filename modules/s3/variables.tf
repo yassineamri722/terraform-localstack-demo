@@ -1,4 +1,11 @@
+# modules/s3/variables.tf
 variable "bucket_name" {
-  description = "The name of the S3 bucket"
+  description = "Name of the S3 bucket"
   type        = string
+}
+
+variable "tags" {
+  description = "Tags to be applied to the S3 bucket"
+  type        = map(string)
+  default     = {}
 }
